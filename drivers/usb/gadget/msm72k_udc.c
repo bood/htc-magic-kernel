@@ -1038,12 +1038,12 @@ static int usb_phy_reset(struct usb_info *ui)
 		ui->hw_reset(0);
 
 #if defined(CONFIG_ARCH_QSD8X50)
-	val = readl(USB_PORTSC) & ~PORTSC_PTS_MASK;
+	u32 val = readl(USB_PORTSC) & ~PORTSC_PTS_MASK;
 	writel(val | PORTSC_PTS_ULPI, USB_PORTSC);
 
 	/* XXX: only necessary for pre-45nm internal PHYs. */
-	for (retries = 3; retries > 0; retries--) {
-		ret = ulpi_write(ui, ULPI_FUNC_SUSPENDM, ULPI_FUNC_CTRL_CLR);
+	for (int retries = 3; retries > 0; retries--) {
+		int ret = ulpi_write(ui, ULPI_FUNC_SUSPENDM, ULPI_FUNC_CTRL_CLR);
 		if (!ret)
 			break;
 		ui->phy_reset();
