@@ -251,9 +251,10 @@ not_relocated:	mov	r0, #0
  *   r6 = size of decompressed image
  *   r2 = end of malloc space (and therefore this image)
  * We basically want:
- *   r4 >= r2 -> OK
+ *   r4 - 16k page directory >= r10 -> OK
  *   r4 + image length <= r5 -> OK
  */
+                add     r10, r10, #16384
 		cmp	r4, r2
 		bhs	wont_overwrite
 		add	r0, r4, r6
@@ -288,6 +289,11 @@ not_relocated:	mov	r0, #0
 		blo	1b
 		mov	sp, r1
 		add	sp, sp, #128		@ relocate the stack
+
+#ifndef CONFIG_ZBOOT_ROM
+		/* cache_clean_flush may use the stack, so relocate it */
+		add	sp, sp, r6
+#endif
 
 		bl	cache_clean_flush
  ARM(		add	pc, r5, r0		) @ call relocation code
@@ -1071,5 +1077,5 @@ memdump:	mov	r12, r0
 reloc_end:
 
 		.align
-		.section ".stack", "w"
+		.section ".stack", "aw", %nobits
 user_stack:	.space	4096
